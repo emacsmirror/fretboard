@@ -35,6 +35,7 @@
 ;; - Support for various scale types (major, minor, pentatonic, etc.)
 ;; - Support for various chord types (major, minor, 7th, etc.)
 ;; - Multiple tuning options (standard, drop-D, open-G, etc.)
+;; - Support for 4 and 6 string instruments.
 ;; - Interactive navigation between notes, scales, and chord types
 ;;
 ;; Usage:
@@ -62,7 +63,10 @@
                             (:name "half-step-down" :notes ("D#" "G#" "C#" "F#" "A#" "D#"))
                             (:name "drop-d" :notes ("D" "A" "D" "G" "B" "E"))
                             (:name "open-g" :notes ("D" "G" "D" "G" "B" "D"))
-                            (:name "dadgad" :notes ("D" "A" "D" "G" "A" "D")))
+                            (:name "dadgad" :notes ("D" "A" "D" "G" "A" "D"))
+                            (:name "ukulele-standard" :notes ("G" "C" "E" "A"))
+                            (:name "ukulele-baritone" :notes ("D" "G" "B" "E"))
+                            (:name "bass-standard" :notes ("E" "A" "D" "G")))
   "List of guitar tunings.")
 
 (defvar fretboard-tuning-current '("E" "A" "D" "G" "B" "E")
@@ -172,7 +176,7 @@ Returns the interval name (e.g., 1, m3, 5) for the given note."
 
 (defun fretboard-get-note-at-position (string fret)
   "Get the note at the given STRING and FRET position."
-  (let* ((open-note (nth (- 6 string) fretboard-tuning-current))
+  (let* ((open-note (nth (- (length fretboard-tuning-current) string) fretboard-tuning-current))
          (open-note-index (-elem-index open-note fretboard-notes))
          (note-index (mod (+ open-note-index fret) (length fretboard-notes))))
     (nth note-index fretboard-notes)))
@@ -205,7 +209,7 @@ Optionally, determine the number of FRETS to display."
       (insert "\n")
 
       ;; Fretboard
-      (dotimes (string 6)
+      (dotimes (string (length fretboard-tuning-current))
         (let ((string-num (1+ string)))
           ;; String number
           (insert (format "%d " string-num))

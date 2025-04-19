@@ -13,6 +13,7 @@ An Emacs package for visualizing notes, scales and chords on a guitar fretboard.
 - Toggle between the 7 diatonic modes.
 - View the fretboard notes by either name or intervals.
 - Support for multiple tunings
+- Support for 4 and 6 string instruments.
 - Interactive navigation mode.
 
 ## Installation
@@ -149,6 +150,9 @@ When viewing the major scale you can toggle between the 7 diatonic [modes](https
 - Open G (D G D G B D)
 - DADGAD (D A D G A D)
 - Half step down (Eb Ab Db Gb Bb Eb)
+- Ukulele Standard (G C E A)
+- Ukulele Baritone (D G B E)
+- Bass Standard (E A D G)
 
 ## License
 
