@@ -4,10 +4,10 @@
 
 ;; Author: Skye Freeman
 ;; URL: https://github.com/skyefreeman/fretboard.el
-;; Version: 1.0.1
+;; Version: 1.0.2
 ;; Package-Requires: ((emacs "27.1") (s "1.13.0") (dash "2.19.0"))
 ;; Keywords: music, guitar, tools
-(defconst fretboard--version "1.0.1")
+(defconst fretboard--version "1.0.2")
 
 ;; This file is NOT part of GNU Emacs.
 
