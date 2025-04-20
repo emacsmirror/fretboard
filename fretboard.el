@@ -61,7 +61,7 @@
 
 (defgroup fretboard nil
   "Visualize guitar scales and chord shapes on a fretboard."
-  :group 'tools
+  :group 'applications
   :prefix "fretboard-")
 
 (defcustom fretboard-fret-count 12
