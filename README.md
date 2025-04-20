@@ -78,12 +78,35 @@ An Emacs package for visualizing notes, scales and chords on a guitar fretboard.
 
 ### Customization
 
-You can customize the appearance and behavior of fretboard.el:
+You can customize the appearance and behavior of fretboard.el using Emacs' customization interface or directly in your configuration:
 
 ```elisp
+;; Using M-x customize-group RET fretboard RET
+;; OR directly in your init.el:
+
 ;; Change the number of frets displayed (default is 12)
-(setq fretboard-fret-count 24)
+(customize-set-variable 'fretboard-fret-count 24)
+
+;; Customize the appearance
+(customize-set-variable 'fretboard-base-face '((t :height 180)))  ;; Larger font size
+(customize-set-variable 'fretboard-root-face '((t :inherit fretboard-base-face :foreground "orange"))) ;; Change root note color
+(customize-set-variable 'fretboard-display-relative-face '((t :inherit fretboard-base-face :foreground "cyan"))) ;; Change interval note color
 ```
+
+#### Available Customization Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `fretboard-fret-count` | Number of frets to display | 12 |
+
+#### Available Faces
+
+| Face | Description | Default |
+|------|-------------|---------|
+| `fretboard-base-face` | Base face for all fretboard elements (controls font size) | :height 200 |
+| `fretboard-root-face` | Face for root notes | Red, bold |
+| `fretboard-display-relative-face` | Face for interval notes when in relative mode | Blue |
+| `fretboard-unmarked-face` | Face for unmarked positions | Inherits from base face |
 
 ### Navigation
 
