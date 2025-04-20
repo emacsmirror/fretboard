@@ -59,6 +59,36 @@
 (require 's)
 (require 'dash)
 
+(defgroup fretboard nil
+  "Visualize guitar scales and chord shapes on a fretboard."
+  :group 'tools
+  :prefix "fretboard-")
+
+(defcustom fretboard-fret-count 12
+  "Number of frets to display on the fretboard."
+  :type 'integer
+  :group 'fretboard)
+
+(defface fretboard-base-face
+  '((t :height 200))
+  "Base face for fretboard elements, defining the font size."
+  :group 'fretboard)
+
+(defface fretboard-relative-face
+  '((t :inherit fretboard-base-face :foreground "#0096FF"))
+  "Face for the relative interval notes on the fretboard."
+  :group 'fretboard)
+
+(defface fretboard-root-face
+  '((t :inherit fretboard-base-face :foreground "#FF0000" :weight bold))
+  "Face for the root note of a scale or chord."
+  :group 'fretboard)
+
+(defface fretboard-unmarked-face
+  '((t :inherit fretboard-base-face))
+  "Face for unmarked positions on the fretboard."
+  :group 'fretboard)
+
 (defvar fretboard-tunings '((:name "standard" :notes ("E" "A" "D" "G" "B" "E"))
                             (:name "half-step-down" :notes ("D#" "G#" "C#" "F#" "A#" "D#"))
                             (:name "drop-d" :notes ("D" "A" "D" "G" "B" "E"))
@@ -88,19 +118,6 @@
   "All available modes in western music.")
 
 (defvar fretboard-mode-counter 0)
-
-(defcustom fretboard-fret-count 12
-  "Number of frets to display on the fretboard."
-  :type 'integer
-  :group 'fretboard)
-
-(defface fretboard-display-relative-face
-  '((t :foreground "#0096FF"))
-  "Face for the root note of a scale or chord.")
-
-(defface fretboard-root-face
-  '((t :foreground "#FF0000" :weight bold))
-  "Face for the root note of a scale or chord.")
 
 (defvar fretboard-current-display nil
   "Holds information about the current fretboard display for navigation.
@@ -153,6 +170,9 @@ Returns the interval name (e.g., 1, m3, 5) for the given note."
               fretboard-interval-table)
        :name))))
 
+(defun fretboard-propertized-insert (text &optional face)
+  "Insert TEXT with base face properties, or override it with a custom FACE."
+  (insert (propertize text 'face (or face 'fretboard-base-face))))
 
 (defun fretboard-get-notes-for-tuning (name)
   "Get the open string notes for the giving tuning NAME."
@@ -201,18 +221,21 @@ Optionally, determine the number of FRETS to display."
 
     (with-temp-buffer
       ;; Header
-      (insert "  ")
+      (fretboard-propertized-insert "  ")
       (dotimes (fret (1+ fret-count))
-        (if (< fret 10)
-            (insert (format " %d  " fret))
-          (insert (format "%2d  " fret))))
-      (insert "\n")
+        (let ((fret-text (if (< fret 10)
+                           (format " %d  " fret)
+                         (format "%2d  " fret))))
+          (fretboard-propertized-insert fret-text)))
+
+      (fretboard-propertized-insert "\n")
 
       ;; Fretboard
       (dotimes (string (length fretboard-tuning-current))
         (let ((string-num (1+ string)))
           ;; String number
-          (insert (format "%d " string-num))
+          (let ((string-num-text (format "%d " string-num)))
+            (fretboard-propertized-insert string-num-text))
 
           ;; Each fret
           (dotimes (fret (1+ fret-count))
@@ -229,13 +252,15 @@ Optionally, determine the number of FRETS to display."
                    (is-root (string= note root-note)))
 
               (cond
-               ((not highlighted) (insert " ·  "))
+               ((not highlighted)
+                (fretboard-propertized-insert " ·  " 'fretboard-unmarked-face))
                (is-root
-                (insert (propertize formatted-note 'face 'fretboard-root-face)))
+                (fretboard-propertized-insert formatted-note 'fretboard-root-face))
                (fretboard-display-relative-notes
-                (insert (propertize formatted-relative-interval 'face 'fretboard-display-relative-face)))
-               (t (insert formatted-note)))))
-          (insert "\n")))
+                (fretboard-propertized-insert formatted-relative-interval 'fretboard-relative-face))
+               (t
+                (fretboard-propertized-insert formatted-note)))))
+          (fretboard-propertized-insert "\n")))
       (buffer-string))))
 
 (defun fretboard-display-scale (root scale-type)
@@ -265,16 +290,16 @@ Optionally, determine the number of FRETS to display."
 
     (with-current-buffer (get-buffer-create buffer-name)
       (erase-buffer)
-      (insert (format "Fretboard - %s %s Scale\n" root scale-type))
-      (insert (format "Tuning - %s %s\n\n"
-                      (fretboard-get-name-for-tuning-notes fretboard-tuning-current)
-                      fretboard-tuning-current))
-      (insert (format "Mode - %s \n" (nth fretboard-mode-counter fretboard-modes)))
-      (insert (format "Notes: %s\n\n" (s-join ", " fretboard-notes-current)))
+      (fretboard-propertized-insert (format "Fretboard - %s %s Scale\n" root scale-type))
+      (fretboard-propertized-insert (format "Tuning - %s %s\n\n"
+                                            (fretboard-get-name-for-tuning-notes fretboard-tuning-current)
+                                            fretboard-tuning-current))
+      (fretboard-propertized-insert (format "Mode - %s \n" (nth fretboard-mode-counter fretboard-modes)))
+      (fretboard-propertized-insert (format "Notes: %s\n\n" (s-join ", " fretboard-notes-current)))
       (insert fretboard)
-      (insert (if (string= scale-type "major")
-                  "\nNavigate:\n\nn=next\np=previous\nk=next-type\nj=previous-type\n,=next-mode\nm=previous-mode\ns=scale\nc=chord\nt=tuning\nr=relative\nq=quit"
-                "\nNavigate:\n\nn=next\np=previous\nk=next-type\nj=previous-type\ns=scale\nc=chord\nt=tuning\nr=relative\nq=quit"))
+      (fretboard-propertized-insert (if (string= scale-type "major")
+                                        "\nNavigate:\n\nn=next\np=previous\nk=next-type\nj=previous-type\n,=next-mode\nm=previous-mode\ns=scale\nc=chord\nt=tuning\nr=relative\nq=quit"
+                                      "\nNavigate:\n\nn=next\np=previous\nk=next-type\nj=previous-type\ns=scale\nc=chord\nt=tuning\nr=relative\nq=quit"))
       (fretboard-mode)
       (switch-to-buffer buffer-name))))
 
@@ -312,13 +337,13 @@ Optionally, determine the number of FRETS to display."
 
     (with-current-buffer (get-buffer-create buffer-name)
       (erase-buffer)
-      (insert (format "Fretboard - %s %s Chord\n" root chord-type))
-      (insert (format "Tuning - %s %s\n\n"
+      (fretboard-propertized-insert (format "Fretboard - %s %s Chord\n" root chord-type))
+      (fretboard-propertized-insert (format "Tuning - %s %s\n\n"
                       (fretboard-get-name-for-tuning-notes fretboard-tuning-current)
                       fretboard-tuning-current))
-      (insert (format "Notes: %s\n\n" (s-join ", " fretboard-notes-current)))
+      (fretboard-propertized-insert (format "Notes: %s\n\n" (s-join ", " fretboard-notes-current)))
       (insert fretboard)
-      (insert "\nNavigate:\n\nn=next\np=previous\nk=next-type\nj=previous-type\ns=scale\nc=chord\nt=tuning\nr=relative\nq=quit")
+      (fretboard-propertized-insert "\nNavigate:\n\nn=next\np=previous\nk=next-type\nj=previous-type\ns=scale\nc=chord\nt=tuning\nr=relative\nq=quit")
       (fretboard-mode)
       (switch-to-buffer buffer-name))))
 
